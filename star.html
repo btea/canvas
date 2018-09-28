@@ -41,9 +41,20 @@
             ctx.beginPath();
             ctx.fillStyle = this.color;
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        Star.prototype.update = function(){
+
+        }
+        Star.prototype.clear = function(){
+            if(this.x < w * 0.2){
+                ctx.clearRect(0,0,w,h);
+            }
+            this.x += this.sx;
+            this.y += this.sy;
             
         }
-
 
 
     </script>

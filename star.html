@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>star</title>
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        var canvas = document.getElementById('canvas'),
+            w = window.innerWidth,
+            h = window.innerHeight,
+            ctx = caches.getContext('2d')
+        ;
+        canvas.width = w;
+        canvas.height = h;
+        
+        function random(max, min){
+            return Math.floor(Math.random() * (max- min + 1)) + min;
+        }
+
+        function Star(x, y, sx, sy, size){
+            this.x = x;
+            this.y = y;
+            this.sx = sx;
+            this.sy = sy;
+            this.color = '#fff';
+            this.size = size;
+        }
+        
+        Star.prototype.draw = function(){
+            ctx.beginPath();
+            ctx.fillStyle = this.color;
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            
+        }
+
+
+
+    </script>
+</body>
+</html>

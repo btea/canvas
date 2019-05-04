@@ -1,5 +1,9 @@
+import Create from './template/html';
+import ImageDeal from './ImageDeal';
+
 const fabric = require('fabric').fabric;
-// let canvas = document.getElementById('canvas');
+
+// share type draw
 let canvas = new fabric.Canvas('canvas');
 let rect = new fabric.Rect({
     left: 100,
@@ -27,3 +31,18 @@ urls.forEach(src => {
     });
 })
 
+// node element create
+let ele = new Create({tag: 'input', class: 'image', type: 'file'});
+ele.create();
+ele.ele.addEventListener('change', function(e){
+    const file = e.target.files[0];
+    const imageObj = new ImageDeal();
+    imageObj.fileToDataUrl(file, addUrl);
+
+});
+
+function addUrl(src){
+    fabric.Image.fromURL(src, function(oImg){
+        canvas.add(oImg);
+    });
+}

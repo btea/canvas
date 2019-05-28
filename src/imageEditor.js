@@ -1,7 +1,5 @@
 import fabric from 'fabric';
-// import * as list from './functionList';
 import * as list from './functionList';
-
 class ImageEditor{
     constructor(el = '#map'){
         this.fabric = fabric.fabric;
@@ -38,7 +36,7 @@ class ImageEditor{
         const banner = document.createElement('div');
         banner.classList = 'banner head';
         // banner.style
-    },
+    }
     undo(){
         /**撤销操作 */
         let n = this.operatorStack.length;

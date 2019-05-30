@@ -48,5 +48,13 @@ let editor = new imageEditor();
 console.log(editor);
 editor.addText();
 editor.addImage('https://avatars0.githubusercontent.com/u/24516654?s=460&v=4');
+let undo = document.getElementsByClassName('undo')[0];
+undo.addEventListener('click', () => {
+    editor.undo();
+});
 
+let next = document.getElementsByClassName('next')[0];
+next.addEventListener('click', () => {
+    editor.next();
+})
 

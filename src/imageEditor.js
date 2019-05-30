@@ -3,7 +3,8 @@ import * as list from './functionList';
 class ImageEditor{
     constructor(el = '#map'){
         this.fabric = fabric.fabric;
-        this.operatorStack = [];
+        this.operatorStack = []; // 执行的操作记录
+        this.undoStack = []; // 执行的回退记录
         this.box = document.querySelector(el);
         this.width = parseInt(this.getStyle(this.box, 'width'));
         this.height = parseInt(this.getStyle(this.box, 'height'));
@@ -39,10 +40,20 @@ class ImageEditor{
     }
     undo(){
         /**撤销操作 */
-        let n = this.operatorStack.length;
+        let n = this.operatorStack.length, ope;
         if(n){
-            this.instance.remove();
-            this.operatorStack.splice(n - 1, 1);
+            ope = this.operatorStack.pop();
+            this.instance.remove(ope);
+            this.undoStack.push(ope);
+        }
+    }
+    next(){
+        /**恢复撤销的操作 */
+        let n = this.undoStack.length, ope;
+        if(n){
+            ope = this.undoStack.pop();
+            this.instance.add(ope);
+            this.operatorStack.push(ope);            
         }
     }
 }

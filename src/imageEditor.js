@@ -1,5 +1,6 @@
 import fabric from 'fabric';
 import * as list from './functionList';
+
 class ImageEditor{
     constructor(el = '#map'){
         this.fabric = fabric.fabric;

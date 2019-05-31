@@ -1,7 +1,7 @@
 import Create from './template/html';
 import ImageDeal from './collection/ImageDeal';
 
-const fabric = require('fabric').fabric;
+// const fabric = require('fabric').fabric;
 // share type draw
 // let canvas = new fabric.Canvas('canvas');
 // let rect = new fabric.Rect({
@@ -56,5 +56,11 @@ undo.addEventListener('click', () => {
 let next = document.getElementsByClassName('next')[0];
 next.addEventListener('click', () => {
     editor.next();
+})
+
+
+import dragElement from './template/drag';
+new dragElement({
+    element: document.getElementsByClassName('box')[0]
 })
 

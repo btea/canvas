@@ -1,3 +1,6 @@
+import { timingSafeEqual } from "crypto";
+import { relative } from "path";
+
 export default class dragElement{
     constructor(object){
         this.element = object.element || null;
@@ -19,11 +22,11 @@ export default class dragElement{
         h = parseInt(h);
         this.w = w;
         this.h = h;
-        this.boxW = parseInt(this.containerParent, 'width');
-        this.boxH = parseInt(this.containerParent, 'height');
+        this.boxW = parseInt(this.getStyle(this.containerParent, 'width'));
+        this.boxH = parseInt(this.getStyle(this.containerParent, 'height'));
         this.left = 300;
         this.top = 300;
-        this.container.style = `width: ${w}px;height: ${h}px;position: absolute;left: 300px;top: 300px; cursor: move;`;
+        this.container.style = `width: ${w}px;height: ${h}px;position: absolute;left: 300px;top: 300px; cursor: move;z-index: 10;`;
         this.createPoints();
         
         this.container.appendChild(this.element.cloneNode(true)); // 克隆一个元素副本，不然替换的新元素包含原来被替换的旧元素会报错
@@ -128,7 +131,7 @@ export default class dragElement{
             }
         })
     }
-    elementChange(arg){
+    elementChange(...arg){
         /** 
          * @param arg包含鼠标移动取到的点数据（e）和当前操操作的点的类别
         */
@@ -138,28 +141,64 @@ export default class dragElement{
         /** 
          * 拖动盒子元素绑定
         */
+        // document.addEventListener('mouseup', () => {
+        //     this.isBoxMove = false;
+        // })
         this.container.addEventListener('mousedown', (e) => {
             this.isBoxMove = true;
             this.initLeft = parseInt(this.getStyle(this.container, 'left'));
             this.initTop = parseInt(this.getStyle(this.container, 'top'));
+            this.offsetX = this.container.offsetLeft;
+            this.offsetY = this.container.offsetTop;
+            this.x = e.clientX;
+            this.y = e.clientY;
         });
         this.container.addEventListener('mouseup', () => {
             this.isBoxMove = false;
         });
         this.container.addEventListener('mousemove', (e) => {
-            let x = e.clientX, y = e.clientY, left, top;
-            left = e.clientX - e.layerX;
-            top = e.clientY - e.layerY;
-            if(x <= e.layerX){
-                left = 0;
+            if(this.isBoxMove){
+                let x = e.clientX, y = e.clientY, left, top;
+                left = this.initLeft + x - this.x;
+                top = this.initTop + y - this.y;
+
+                this.elementMove(left, top);
+                return;
+
+                // 已经移动到最左边，禁止继续往左拖动
+                if(!this.offsetX){
+                    e.clientX <= this.x && (left = 0);
+                }else{
+                    if(e.clientX <= e.layerX){ return }
+                }
+                // 禁止往右边界继续拖拽
+                if(this.offsetX === this.boxW - this.w){
+                    if(e.clientX - this.offsetX >= e.layerX){ return }
+                }else{
+                    this.container.offsetLeft + this.w >= this.boxW && (left = this.boxW - this.w);
+                }
+            
+                // 拖拽至顶部，禁止继续往顶部拖拽
+                if(!this.offsetY){
+                    e.clientY <= this.y && (top = 0);
+                }else{
+                    if(e.clientY <= e.layerY){return};
+                }
+                // 禁止往超出盒子的底部部分继续拖拽
+                if(this.offsetY === this.boxH - this.h){
+                    if(e.clientY - this.offsetY >= e.layerY){ return }
+                }else{
+                    this.container.offsetTop + this.h >= this.boxH && (top = this.boxH - this.h);
+                }
+                
             }
-            if(y <= e.layerY){
-                top = 0;
-            }
-            this.container.style.left = `${left}px;`;
-            this.container.style.top = `${top}px;`;
+            
             
         })
+    }
+    elementMove(left, top){
+        this.container.style.left = `${left}px`;
+        this.container.style.top = `${top}px`;
     }
     throttle(fn, t){
         let time = 0;

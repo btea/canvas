@@ -26,7 +26,7 @@ export default class dragElement{
         this.boxH = parseInt(this.getStyle(this.containerParent, 'height'));
         this.left = 300;
         this.top = 300;
-        this.container.style = `width: ${w}px;height: ${h}px;position: absolute;left: 300px;top: 300px; cursor: move;z-index: 10;`;
+        this.container.style = `width: ${w}px;height: ${h}px;position: absolute;left: 300px;top: 300px; cursor: move;z-index: 10;border: 1px solid #6cf;`;
         this.createPoints();
         
         this.container.appendChild(this.element.cloneNode(true)); // 克隆一个元素副本，不然替换的新元素包含原来被替换的旧元素会报错
@@ -48,21 +48,18 @@ export default class dragElement{
             this.offsetY = this.container.offsetTop;
             this.x = e.clientX;
             this.y = e.clientY;
-            e.stopPropagation();
         });
         this.container.addEventListener('mouseup', (e) => {
             this.isBoxMove = false;
-            e.stopPropagation();
         });
         this.container.addEventListener('mousemove', (e) => {
-            e.stopPropagation();
             if(this.isBoxMove){
                 let x = e.clientX, y = e.clientY, left, top;
                 left = this.initLeft + x - this.x;
                 top = this.initTop + y - this.y;
 
-                // this.elementMove(left, top);
-                // return;
+                this.elementMove(left, top);
+                return;
 
                 // 已经移动到最左边，禁止继续往左拖动
                 if(!this.offsetX){
@@ -102,6 +99,12 @@ export default class dragElement{
         this.top = top;
         this.container.style.left = `${left}px`;
         this.container.style.top = `${top}px`;
+    }
+    convert(val, binary){
+        /** 
+         * 进制转换
+        */
+        return parseInt(val, binary);
     }
     createPoints(){
         let p_w = 10, color = '#6cf';
@@ -179,7 +182,7 @@ export default class dragElement{
             this.container.appendChild(p);
             this.bindEvent(p, point);
         }
-        this.container.style.border = '1px solid rgba(102, 204, 255, .5)';
+        this.container.style.border = `1px solid rgba(${this.convert('66', 16)}, ${this.convert('cc', 16)}, ${this.convert('ff', 16)}, .5)`;
         document.addEventListener('mousemove', () => {
             this.isMove = false;
         });
@@ -242,11 +245,7 @@ export default class dragElement{
         let w, h;
         // 往右边拉伸，left不变，宽度变化
         if(type === 'rightMid'){
-            console.log('this.w', this.w);
-            console.log('e.clientX', e.clientX);
-            console.log('this.c_x', this.c_x);
             w = this.w + e.clientX - this.c_x;
-            console.log('w', w);
             this.mouseEnd({width: `${w}px`});
         }
         // 往左侧拉伸，left变化，宽度也跟着变化

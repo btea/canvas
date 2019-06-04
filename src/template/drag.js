@@ -33,6 +33,44 @@ export default class dragElement{
         this.containerParent.replaceChild(this.container, this.element); // 替换原本标签
 
     }
+    boxMoveCallBack(e){
+        if(this.isBoxMove){
+            let x = e.clientX, y = e.clientY, left, top;
+            left = this.initLeft + x - this.x;
+            top = this.initTop + y - this.y;
+
+            // this.elementMove(left, top);
+            // return;
+
+            // 已经移动到最左边，禁止继续往左拖动
+            if(!this.offsetX){
+                e.clientX <= this.x && (left = 0);
+            }else{
+                if(e.clientX <= e.layerX){ return }
+            }
+            // 禁止往右边界继续拖拽
+            if(this.offsetX === this.boxW - this.w){
+                if(e.clientX - this.offsetX >= e.layerX){ return }
+            }else{
+                this.container.offsetLeft + this.w >= this.boxW && (left = this.boxW - this.w);
+            }
+        
+            // 拖拽至顶部，禁止继续往顶部拖拽
+            if(!this.offsetY){
+                e.clientY <= this.y && (top = 0);
+            }else{
+                if(e.clientY <= e.layerY){ return };
+            }
+            // 禁止往超出盒子的底部部分继续拖拽
+            if(this.offsetY === this.boxH - this.h){
+                if(e.clientY - this.offsetY >= e.layerY){ return }
+            }else{
+                this.container.offsetTop + this.h >= this.boxH && (top = this.boxH - this.h);
+            }
+
+            this.elementMove(left, top);
+        }
+    }
     boxMove(){
         /** 
          * 拖动盒子元素绑定
@@ -48,51 +86,12 @@ export default class dragElement{
             this.offsetY = this.container.offsetTop;
             this.x = e.clientX;
             this.y = e.clientY;
+            document.addEventListener('mousemove', this.boxMoveCallBack.bind(this));
+            this.container.addEventListener('mouseup', () => {
+                this.isBoxMove = false;
+                document.removeEventListener('mousmove', this.boxMoveCallBack);
+            })
         });
-        this.container.addEventListener('mouseup', (e) => {
-            this.isBoxMove = false;
-        });
-        this.container.addEventListener('mousemove', (e) => {
-            if(this.isBoxMove){
-                let x = e.clientX, y = e.clientY, left, top;
-                left = this.initLeft + x - this.x;
-                top = this.initTop + y - this.y;
-
-                this.elementMove(left, top);
-                return;
-
-                // 已经移动到最左边，禁止继续往左拖动
-                if(!this.offsetX){
-                    e.clientX <= this.x && (left = 0);
-                }else{
-                    if(e.clientX <= e.layerX){ return }
-                }
-                // 禁止往右边界继续拖拽
-                if(this.offsetX === this.boxW - this.w){
-                    if(e.clientX - this.offsetX >= e.layerX){ return }
-                }else{
-                    this.container.offsetLeft + this.w >= this.boxW && (left = this.boxW - this.w);
-                }
-            
-                // 拖拽至顶部，禁止继续往顶部拖拽
-                if(!this.offsetY){
-                    e.clientY <= this.y && (top = 0);
-                }else{
-                    if(e.clientY <= e.layerY){ return };
-                }
-                // 禁止往超出盒子的底部部分继续拖拽
-                if(this.offsetY === this.boxH - this.h){
-                    if(e.clientY - this.offsetY >= e.layerY){ return }
-                }else{
-                    this.container.offsetTop + this.h >= this.boxH && (top = this.boxH - this.h);
-                }
-
-                this.elementMove(left, top);
-                
-            }
-            
-            
-        })
     }
     elementMove(left, top){
         this.left = left;

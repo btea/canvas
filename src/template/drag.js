@@ -18,6 +18,7 @@ export default class dragElement{
         if(!this.element){return;}
         let w = this.getStyle(this.element, 'width');
         let h = this.getStyle(this.element, 'height');
+        let clone;
         w = parseInt(w);
         h = parseInt(h);
         this.w = w;
@@ -29,47 +30,12 @@ export default class dragElement{
         this.container.style = `width: ${w}px;height: ${h}px;position: absolute;left: 300px;top: 300px; cursor: move;z-index: 10;border: 1px solid #6cf;`;
         this.createPoints();
         
-        this.container.appendChild(this.element.cloneNode(true)); // 克隆一个元素副本，不然替换的新元素包含原来被替换的旧元素会报错
+        clone = this.element.cloneNode(true);
+        clone.style.width = '100%';
+        clone.style.height = '100%';
+        this.container.appendChild(clone); // 克隆一个元素副本，不然替换的新元素包含原来被替换的旧元素会报错
         this.containerParent.replaceChild(this.container, this.element); // 替换原本标签
 
-    }
-    boxMoveCallBack(e){
-        if(this.isBoxMove){
-            let x = e.clientX, y = e.clientY, left, top;
-            left = this.initLeft + x - this.x;
-            top = this.initTop + y - this.y;
-
-            // this.elementMove(left, top);
-            // return;
-
-            // 已经移动到最左边，禁止继续往左拖动
-            if(!this.offsetX){
-                e.clientX <= this.x && (left = 0);
-            }else{
-                if(e.clientX <= e.layerX){ return }
-            }
-            // 禁止往右边界继续拖拽
-            if(this.offsetX === this.boxW - this.w){
-                if(e.clientX - this.offsetX >= e.layerX){ return }
-            }else{
-                this.container.offsetLeft + this.w >= this.boxW && (left = this.boxW - this.w);
-            }
-        
-            // 拖拽至顶部，禁止继续往顶部拖拽
-            if(!this.offsetY){
-                e.clientY <= this.y && (top = 0);
-            }else{
-                if(e.clientY <= e.layerY){ return };
-            }
-            // 禁止往超出盒子的底部部分继续拖拽
-            if(this.offsetY === this.boxH - this.h){
-                if(e.clientY - this.offsetY >= e.layerY){ return }
-            }else{
-                this.container.offsetTop + this.h >= this.boxH && (top = this.boxH - this.h);
-            }
-
-            this.elementMove(left, top);
-        }
     }
     boxMove(){
         /** 
@@ -78,6 +44,31 @@ export default class dragElement{
         // document.addEventListener('mouseup', () => {
         //     this.isBoxMove = false;
         // })
+        let boxMovecallback = (e) => {
+            if(this.isBoxMove){
+                let x = e.clientX, y = e.clientY, left, top, el = this.container;
+                left = this.initLeft + x - this.x;
+                top = this.initTop + y - this.y;
+                // 不限制边界，直接拖拽
+                // this.elementMove(left, top);
+                // return;
+
+                this.elementMove(left, top);
+                if(el.offsetLeft <= 0){
+                    left  = 0;
+                }
+                if(el.offsetTop <= 0){
+                    top = 0;
+                }
+                if(el.offsetLeft >= this.boxW - this.w){
+                    left = this.boxW - this.w;
+                }
+                if(el.offsetTop >= this.boxH - this.h){
+                    top = this.boxH - this.h;
+                }
+                this.elementMove(left, top);
+            }
+        };
         this.container.addEventListener('mousedown', (e) => {
             this.isBoxMove = true;
             this.initLeft = parseInt(this.getStyle(this.container, 'left'));
@@ -86,12 +77,12 @@ export default class dragElement{
             this.offsetY = this.container.offsetTop;
             this.x = e.clientX;
             this.y = e.clientY;
-            document.addEventListener('mousemove', this.boxMoveCallBack.bind(this));
-            this.container.addEventListener('mouseup', () => {
-                this.isBoxMove = false;
-                document.removeEventListener('mousmove', this.boxMoveCallBack);
-            })
+            document.addEventListener('mousemove', boxMovecallback);
         });
+        this.container.addEventListener('mouseup', () => {
+            this.isBoxMove = false;
+            document.removeEventListener('mousmove', boxMovecallback);
+        })
     }
     elementMove(left, top){
         this.left = left;
@@ -182,44 +173,111 @@ export default class dragElement{
             this.bindEvent(p, point);
         }
         this.container.style.border = `1px solid rgba(${this.convert('66', 16)}, ${this.convert('cc', 16)}, ${this.convert('ff', 16)}, .5)`;
-        document.addEventListener('mousemove', () => {
-            this.isMove = false;
-        });
-        document.addEventListener('mousedown', () => {
-            this.isMove = false;
-        });
-        document.addEventListener('mouseup', () => {
-            this.isMove = false;
-            this.w = parseInt(this.getStyle(this.container, 'width'));
-        })
     }
     bindEvent(el, type){
         /**
          * @param el 需要绑定鼠标事件的元素
          * @param type 用来区分不同按钮，拖拽事件进行的不同操作处理
          */
-        
-        el.addEventListener('mousedown', (e) => {
-            // e.stopImmediatePropagation();
-            e.stopPropagation();
+        let callback = (e) => {
+            if(!this.isMove){return;}
+            if(type ===  'rightMid' || type === 'rightTop' || type === 'rightBottom'){
+                // 固定left
+                this.rightDraw(e, type);
+            }
+            if(type === 'leftMid' || type === 'leftTop' || type === 'leftBottom'){
+                this.leftDraw(e, type);
+            }
+            if(type === 'midTop' || type === 'midBottom'){
+                this.middleDraw(e, type);
+            }
+        }
+        el.addEventListener('mousedown', e => {
             this.isMove = true;
-            this.mouseStartVal(e);
-            
+            this.isBoxMove = false;
+            e.stopPropagation();
+            this.initC_x = e.clientX;
+            this.initC_y = e.clientY;
+            this.initTop = parseInt(this.getStyle(this.container, 'top'));
+            this.initLeft = parseInt(this.getStyle(this.container, 'left'));
+            document.addEventListener('mousemove', callback);
         });
         el.addEventListener('mouseup', (e) => {
-            // e.stopImmediatePropagation();
-            e.stopPropagation();
             this.isMove = false;
-            this.w = parseInt(this.getStyle(this.container, 'width'));
+            this.isBoxMove = true;
+            document.removeEventListener('mousemove', callback)
         });
-        el.addEventListener('mousemove', (e) => {
-            // e.stopImmediatePropagation();
-            e.stopPropagation();
-            if(this.isMove){
-                this.throttle(this.elementChange, 10)(type, e);
-                // this.elementChange(type, e);
-            }
+        document.addEventListener('mouseup', () => {
+            this.isMove = false;
+            // this.isBoxMove = false;
+            this.initVal();
         })
+    }
+    initVal(){
+        // 拉伸弹框之后，重新初始化新的值
+        let w = this.getStyle(this.container, 'width');
+        let h = this.getStyle(this.container, 'height');
+        w = parseInt(w);
+        h = parseInt(h);
+        this.w = w;
+        this.h = h;
+    }
+    rightDraw(e, type){
+        let w, h, obj = {};
+        w = e.clientX - this.initC_x;
+        h = e.clientY - this.initC_y;
+        obj.width = this.w + w;
+        // this.container.style.width = `${this.w + w}px`;
+        if(type === 'rightTop'){
+            // 往右上角拉伸时，高度、宽度以及top都要发生变化
+            // this.container.style.top = `${this.initTop + h}px`;
+            // this.container.style.height = `${this.h - h}px`;
+            obj.top = this.initTop + h;
+            obj.height = this.h - h;
+        }
+        if(type === 'rightBottom'){
+            // this.container.style.height = `${this.h + h}px`;
+            obj.height = this.h + h;
+        }
+        this.calcStyle(obj);
+    }
+    leftDraw(e, type){
+        let w, h, obj = {};
+        w = e.clientX - this.initC_x;
+        h = e.clientY - this.initC_y;
+        obj.width = this.w - w;
+        obj.left = this.initLeft + w;
+        if(type === 'leftTop'){
+            obj.top = this.initTop + h;
+            obj.height = this.h - h;
+        }
+        if(type === 'leftBottom'){
+            obj.height = this.h + h;
+        }
+        this.calcStyle(obj);
+    }
+    middleDraw(e, type){
+        let h = e.clientY - this.initC_y, obj = {};
+        if(type === 'midTop'){
+            obj.top = this.initTop + h;
+            obj.height = this.h - h;
+            // this.container.style.top = `${this.initTop + h}px`;
+            // this.container.style.height = `${this.h - h}px`;
+        }
+        if(type === 'midBottom'){
+            // 固定顶部
+            // this.container.style.height = `${this.h + h}px`;
+            obj.height = this.h + h;
+        }
+        this.calcStyle(obj);
+    }
+    calcStyle(obj = {}){
+        // 元素拉伸之后给元素相应的属性赋值
+        for(let key in obj){
+            if(obj.hasOwnProperty(key)){
+                this.container.style[key] = `${obj[key]}px`;
+            }
+        }
     }
     mouseStartVal(e){
         this.c_x  = e.clientX;

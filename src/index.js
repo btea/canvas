@@ -1,5 +1,6 @@
 import Create from './template/html';
 import ImageDeal from './collection/ImageDeal';
+import echarts from 'echarts';
 
 // const fabric = require('fabric').fabric;
 // share type draw
@@ -61,7 +62,26 @@ next.addEventListener('click', () => {
 
 
 import dragElement from './template/drag';
-new dragElement({
+let drag = new dragElement({
     element: document.getElementsByClassName('box')[0]
-})
-
+});
+// let echart = echarts.init(document.getElementsByClassName('box')[0]);
+// echart.setOption({
+//     xAxis: {
+//         type: 'category',
+//         data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+//     },
+//     yAxis: {
+//         type: 'value'
+//     },
+//     series: [{
+//         data: [820, 932, 901, 934, 1290, 1330, 1320],
+//         type: 'line',
+//         smooth: true
+//     }]
+// })
+// let cal = drag.calcStyle;
+// drag.calcStyle = (obj = {}) => {
+//     cal.call(drag, obj);
+//     echart.resize();
+// }

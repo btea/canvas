@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/btea/canvas#readme",
   "dependencies": {
+    "echarts": "^4.2.1",
     "fabric": "^2.7.0"
   },
   "devDependencies": {

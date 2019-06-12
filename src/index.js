@@ -85,3 +85,8 @@ let drag = new dragElement({
 //     cal.call(drag, obj);
 //     echart.resize();
 // }
+
+
+import Canvas from './template/canvasDrag';
+let c = new Canvas({});
+c.addImage('https://avatars3.githubusercontent.com/u/26399528?s=180&v=4')

@@ -11,6 +11,7 @@ class Canvas{
         let canvas = document.createElement('canvas');
         canvas.width = this.w;
         canvas.height = this.h;
+        canvas.style.border = '1px solid aqua';
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         if(this.el){
@@ -32,6 +33,7 @@ class Canvas{
         });
         this.canvas.addEventListener('mouseup', () => {
             this.isMove = false;
+            this.addImage = this.newImage;
         })
     }
     addImage(img){
@@ -88,11 +90,13 @@ class Canvas{
             // this.clearImage(this.addImage);
             this.ctx.clearRect(0, 0, this.w, this.h);
             let left, top, obj;
-            left = e.offsetX;
-            top = e.offsetY;
+            left = this.addImage.left + e.offsetX - this.initLeft;
+            top = this.addImage.top + e.offsetY - this.initTop;
             obj = Object.assign({}, this.addImage);
             obj.left = left;
             obj.top = top;
+            // this.addImage = obj;
+            this.newImage = obj;
             this.drawImage(obj);
         }
     }
@@ -113,34 +117,25 @@ class Canvas{
         this.drawRect(options);
 
         // 左侧
-        this.drawRect({
-            w: $w, h: $w, left: left - ($w / 2), top: top - $w / 2, c: c
-        });
-        this.drawRect({
-            w: $w, h: $w, left: left - ($w / 2), top: top + h / 2 - $w / 2, c: c
-        });
-        this.drawRect({
-            w: $w, h: $w, left: left - ($w / 2), top: top + h - $w / 2, c: c
-        });
-
+        let $left = [
+            {w: $w, h: $w, left: left - ($w / 2), top: top - $w / 2, c: c},
+            {w: $w, h: $w, left: left - ($w / 2), top: top + h / 2 - $w / 2, c: c},
+            {w: $w, h: $w, left: left - ($w / 2), top: top + h - $w / 2, c: c}
+        ];
+        
         // 中间部分
-        this.drawRect({
-            w: $w, h: $w, left: left + (w / 2) - $w / 2, top: top - $w / 2, c: c
-        });
-        this.drawRect({
-            w: $w, h: $w, left: left - (w / 2) - $w / 2, top: top + h - $w / 2, c: c
-        });
+        let $mid = [
+            {w: $w, h: $w, left: left + (w / 2) - $w / 2, top: top - $w / 2, c: c},
+            {w: $w, h: $w, left: left + (w / 2) - $w / 2, top: top + h - $w / 2, c: c}
+        ];
 
         // 右侧
-        this.drawRect({
-            w: $w, h: $w, left: left + w - ($w / 2), top: top - $w / 2, c: c
-        });
-        this.drawRect({
-            w: $w, h: $w, left: left + w - ($w / 2), top: top + h / 2 - $w / 2, c: c
-        });
-        this.drawRect({
-            w: $w, h: $w, left: left + w - ($w / 2), top: top + h - $w / 2, c: c
-        });
+        let $right = [
+            {w: $w, h: $w, left: left + w - ($w / 2), top: top - $w / 2, c: c},
+            {w: $w, h: $w, left: left + w - ($w / 2), top: top + h / 2 - $w / 2, c: c},
+            {w: $w, h: $w, left: left + w - ($w / 2), top: top + h - $w / 2, c: c}
+        ];
+        [...$left,...$mid,...$right].forEach(item => { this.drawRect(item)});
     }
     drawRect(options){
         let {w, h, c, left, top} = options;

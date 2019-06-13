@@ -51,8 +51,6 @@ editor.addText();
 editor.addImage('https://avatars3.githubusercontent.com/u/26399528?s=180&v=4');
 editor.addImage('https://avatars0.githubusercontent.com/u/24516654?s=460&v=4');
 
-editor.addImage('http://t7.tianditu.gov.cn/DataServer?T=img_w&X=107&Y=52&L=7&tk=0a9cfb135e61b353ba6c8b4cb3386101');
-
 let undo = document.getElementsByClassName('undo')[0];
 undo.addEventListener('click', () => {
     editor.undo();
@@ -65,31 +63,35 @@ next.addEventListener('click', () => {
 
 
 import dragElement from './template/drag';
-let drag = new dragElement({
-    element: document.getElementsByClassName('box')[0]
-});
-let echart = echarts.init(document.getElementsByClassName('box')[0]);
-echart.setOption({
-    xAxis: {
-        type: 'category',
-        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-    },
-    yAxis: {
-        type: 'value'
-    },
-    series: [
-        {
-            data: [820, 932, 901, 934, 1290, 1330, 1320],
-            type: 'line',
-            smooth: true,
-            itemStyle: {
-                color: 'aqua'
-            }
-        }
-    ]
-})
-let cal = drag.calcStyle;
-drag.calcStyle = (obj = {}) => {
-    cal.call(drag, obj);
-    echart.resize();
-}
+// let drag = new dragElement({
+    // element: document.getElementsByClassName('box')[0]
+// });
+// let echart = echarts.init(document.getElementsByClassName('box')[0]);
+// echart.setOption({
+//     xAxis: {
+//         type: 'category',
+//         data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+//     },
+//     yAxis: {
+//         type: 'value'
+//     },
+//     series: [
+//         {
+//             data: [820, 932, 901, 934, 1290, 1330, 1320],
+//             type: 'line',
+//             smooth: true,
+//             itemStyle: {
+//                 color: 'aqua'
+//             }
+//         }
+//     ]
+// })
+// let cal = drag.calcStyle;
+// drag.calcStyle = (obj = {}) => {
+//     cal.call(drag, obj);
+//     echart.resize();
+// }
+
+import Canvas from './template/canvasDrag';
+let c = new Canvas({});
+c.addImage('https://avatars3.githubusercontent.com/u/26399528?s=180&v=4')

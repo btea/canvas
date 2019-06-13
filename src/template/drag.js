@@ -82,6 +82,10 @@ export default class dragElement{
         this.container.addEventListener('mouseup', () => {
             this.isBoxMove = false;
             document.removeEventListener('mousmove', boxMovecallback);
+            // 移除绑定的事件，除了传入原来绑定的回调函数，还可以将对应事件回调函数清空 此方法只使用dom1级事件
+            // document.onmousemove = function(){}  绑定
+            // document.onmousemove = null  解绑
+
         })
     }
     elementMove(left, top){
@@ -323,7 +327,7 @@ export default class dragElement{
             }
         }
     }
-    getStyle(el, attr, pseudo){
+    getStyle(el, attr, pseudo = null){
         /**
          * @params el(elementObject)   attr(string)  pseudo(string) 
          * @param el 需要获取样式的元素 

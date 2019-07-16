@@ -1,5 +1,3 @@
-import { timingSafeEqual } from "crypto";
-import { relative } from "path";
 
 export default class dragElement{
     constructor(object){

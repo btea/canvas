@@ -20,7 +20,9 @@
   "homepage": "https://github.com/btea/canvas#readme",
   "dependencies": {
     "echarts": "^4.2.1",
-    "fabric": "^2.7.0"
+    "fabric": "^2.7.0",
+    "vue": "^2.6.10",
+    "vue-loader": "^15.7.0"
   },
   "devDependencies": {
     "html-loader": "^0.5.5",

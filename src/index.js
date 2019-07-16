@@ -2,6 +2,7 @@ import Create from './template/html';
 import ImageDeal from './collection/ImageDeal';
 import echarts from 'echarts';
 
+
 // const fabric = require('fabric').fabric;
 // share type draw
 // let canvas = new fabric.Canvas('canvas');
@@ -30,20 +31,20 @@ import echarts from 'echarts';
 //     });
 // })
 
-// let ele = new Create({tag: 'input', class: 'image', type: 'file'});
-// ele.create();
-// ele.ele.addEventListener('change', function(e){
-//     const file = e.target.files[0];
-//     const imageObj = new ImageDeal();
-//     imageObj.fileToDataUrl(file, addUrl);
+let ele = new Create({tag: 'input', class: 'image', type: 'file'});
+ele.create();
+ele.ele.addEventListener('change', function(e){
+    const file = e.target.files[0];
+    const imageObj = new ImageDeal();
+    imageObj.fileToDataUrl(file, addUrl);
 
-// });
+});
 
-// function addUrl(src){
-//     fabric.Image.fromURL(src, function(oImg){
-//         canvas.add(oImg);
-//     });
-// }
+function addUrl(src){
+    fabric.Image.fromURL(src, function(oImg){
+        canvas.add(oImg);
+    });
+}
 import imageEditor from './imageEditor';
 let editor = new imageEditor();
 console.log(editor);
@@ -56,16 +57,16 @@ undo.addEventListener('click', () => {
     editor.undo();
 });
 
-let next = document.getElementsByClassName('next')[0];
-next.addEventListener('click', () => {
-    editor.next();
-})
+// let next = document.getElementsByClassName('next')[0];
+// next.addEventListener('click', () => {
+//     editor.next();
+// })
 
 
 import dragElement from './template/drag';
-// let drag = new dragElement({
-    // element: document.getElementsByClassName('box')[0]
-// });
+let drag = new dragElement({
+    element: document.getElementsByClassName('box')[0]
+});
 // let echart = echarts.init(document.getElementsByClassName('box')[0]);
 // echart.setOption({
 //     xAxis: {

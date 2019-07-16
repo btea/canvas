@@ -6,6 +6,16 @@ class Canvas{
         this.el = options.el;
         this.init();
         this.lists = [];
+        this.style = {
+            leftT: 'nw-resize',
+            leftM: 'w-resize',
+            leftB: 'sw-resize',
+            midT: 'n-resize',
+            midB: 'n-resize',
+            rightT: 'ne-resize',
+            rightM: 'e-resize',
+            rightB: 'se-resize'
+        };
     }
     init(){
         let canvas = document.createElement('canvas');
@@ -20,11 +30,13 @@ class Canvas{
             document.body.appendChild(canvas);
         }
         this.eventBind();
+        this.transfromFunction();
     }
     eventBind(){
         this.canvas.addEventListener('mousemove', (e) => {
             // console.log(e);
             this.isInImage(e);
+            this.isInRect(e);
         });
         this.canvas.addEventListener('mousedown', (e) => {
             this.initLeft = e.offsetX;
@@ -100,6 +112,55 @@ class Canvas{
             this.drawImage(obj);
         }
     }
+    isInRect(e){
+        let x = e.offsetX,
+        y = e.offsetY;
+
+        this.allPoints.forEach(p => {
+            if(x >= (p.left - p.w / 2) && x <= (p.left + p.w / 2) && y >= (p.top - p.h / 2) && y <= (p.top + p.h / 2)){
+                this.canvas.style.cursor = p.style;
+                if(this.isMove){
+                    if(p.style === 'nw-resize'){
+                        this.leftTopMove(e);
+                    }
+                    console.log(p);
+                }
+            }
+        });
+    }
+    transfromFunction(){
+        this.leftTopMove = (e) => {
+            let x = e.offsetX - this.initLeft;
+            let y = e.offsetY - this.initTop;
+            let obj = this.addImage;
+            obj.left += x;
+            obj.top += y;
+            obj.w -= x;
+            obj.h -= y;
+            this.drawImage(obj);
+        };
+        this.leftMidMove = () => {
+
+        };
+        this.leftBottomMove = () => {
+
+        };
+        this.midTopMove = () => {
+
+        };
+        this.midBottomMove = () => {
+
+        };
+        this.rightTopMove = () => {
+
+        };
+        this.rightMidMove = () => {
+
+        };
+        this.rightBottomMove = () => {
+
+        };
+    }
     clearImage(options){
         let left = options.left - options.$w / 2;
         let top = options.top - options.$w / 2;
@@ -118,24 +179,23 @@ class Canvas{
 
         // 左侧
         let $left = [
-            {w: $w, h: $w, left: left - ($w / 2), top: top - $w / 2, c: c},
-            {w: $w, h: $w, left: left - ($w / 2), top: top + h / 2 - $w / 2, c: c},
-            {w: $w, h: $w, left: left - ($w / 2), top: top + h - $w / 2, c: c}
+            {w: $w, h: $w, left: left - ($w / 2), top: top - $w / 2, c: c, style: this.style.leftT},
+            {w: $w, h: $w, left: left - ($w / 2), top: top + h / 2 - $w / 2, c: c, style: this.style.leftM},
+            {w: $w, h: $w, left: left - ($w / 2), top: top + h - $w / 2, c: c, style: this.style.leftB}
         ];
-        
         // 中间部分
         let $mid = [
-            {w: $w, h: $w, left: left + (w / 2) - $w / 2, top: top - $w / 2, c: c},
-            {w: $w, h: $w, left: left + (w / 2) - $w / 2, top: top + h - $w / 2, c: c}
+            {w: $w, h: $w, left: left + (w / 2) - $w / 2, top: top - $w / 2, c: c, style: this.style.midT},
+            {w: $w, h: $w, left: left + (w / 2) - $w / 2, top: top + h - $w / 2, c: c, style: this.style.midB}
         ];
-
         // 右侧
         let $right = [
-            {w: $w, h: $w, left: left + w - ($w / 2), top: top - $w / 2, c: c},
-            {w: $w, h: $w, left: left + w - ($w / 2), top: top + h / 2 - $w / 2, c: c},
-            {w: $w, h: $w, left: left + w - ($w / 2), top: top + h - $w / 2, c: c}
+            {w: $w, h: $w, left: left + w - ($w / 2), top: top - $w / 2, c: c, style: this.style.rightT},
+            {w: $w, h: $w, left: left + w - ($w / 2), top: top + h / 2 - $w / 2, c: c, style: this.style.rightM},
+            {w: $w, h: $w, left: left + w - ($w / 2), top: top + h - $w / 2, c: c, style: this.style.rightB}
         ];
-        [...$left,...$mid,...$right].forEach(item => { this.drawRect(item)});
+        this.allPoints = [...$left, ...$mid, ...$right];
+        this.allPoints.forEach(item => { this.drawRect(item)});
     }
     drawRect(options){
         let {w, h, c, left, top} = options;

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wave switch</title>
+    <style>
+        .bar{
+            position: absolute;
+            top: 100px;
+            right: 100px;
+            width: 200px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="height bar"></div>
+    <div class="width bar"></div>
+    <script>
+        class WaveAnimation{
+            constructor(opt = {}) {
+                this.imgs = opt.imgs || []  // Array[String] 图片链接集合
+                this.type = opt.type || new Array(this.imgs.length).fill('top') // Array[string] 切换图片方向
+                this.width = opt.width || 200 // Number 图片展示区域的宽度
+                this.height = opt.height || 100  // Number 图片展示区域的高度
+                this.ry = opt.ry || 50 //  曲线的高度（最高值）
+                this.rx = opt.rx || 20 //  波形曲线半个周期的宽度 
+                this.time = opt.time || 3000  // Number 每张图片能够停留展示的时间
+                this.initYaxisVal = 0
+                this.speed = 1 // 速度，目前暂设为1，当速度过大时，会跳过部分像素点，导致停留部分像素点在元素上
+                this.isBelow = false  // 用来判定当前绘制动画的是哪个canvans
+
+                this.animation = window.requestAnimationFrame || window.webkitRequestAnimationFrame || 
+                window.mozRequestAnimationFrame || (callback => { return window.setTimeout(callback,  1000 / 60)})
+                this.cancelAnimation = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || 
+                window.mozCanccelAnimationFrame || window.clearTimeout
+
+                this.startAnimation = (fn) => {
+                    if (this.initYaxisVal >= this.height) {
+                        this.cancelAnimationFrame(this.timeId)
+                        return 
+                    }
+                    this.sineCal(this.initYaxisVal++)
+                    this.timeId = this.animation(this.startAnimation)
+                }
+
+                this.start()
+            }
+            start() {
+                this.initElement()
+            }
+            getRatio(ctx) {
+                let backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
+                    ctx.mozBackingStorePixelRatio ||
+                    ctx.msBackingStorePixelRatio ||
+                    ctx.oBackingStorePixelRatio ||
+                    ctx.backingStorePixelRatio || 1;
+                let devicePixelRatio = window.devicePixelRatio || 1;
+                let ratio = devicePixelRatio / backingStoreRatio;
+                this.ratio = ratio
+                return ratio
+            }
+            containerBox() {
+                this.container = this.createElement('div')
+                this.container.style = `width:${this.width}px;height:${this.height}px;position: relative;`
+            }
+            createElement(name) {
+                return document.createElement(name)
+            }
+            initElement() {
+                this.el = this.createElement('canvas')
+                this.below = this.el.cloneNode(true)
+                
+                this.ctx = this.el.getContext('2d')
+                this.belowCtx = this.below.getContext('2d')
+
+                this.below.style.position = 'absolute'
+                this.below.style.left = '0'
+                this.below.style.top = '0'
+                this.below.style.zIndex = '-1'
+
+                this.initCanvas(this.el, this.ctx)
+                this.initCanvas(this.below, this.belowCtx)
+
+                this.containerBox()
+                this.container.appendChild(this.el)
+                this.container.appendChild(this.below)
+                document.body.appendChild(this.container)
+                this.getImages()
+            }
+            initCanvas(el, ctx) {
+                el.style.width = `${this.width}px`
+                el.style.height = `${this.height}px`
+                this.getRatio(ctx)
+                ctx.scale(this.ratio, this.ratio)
+                el.width = this.width * this.ratio
+                el.height = this.height * this.ratio
+                
+            }
+            getImages() {
+                let lists = []
+                this.imgs.forEach(img => {
+                    lists.push(this.loadImg(img))
+                })
+                Promise.all(lists).then(result => {
+                    this.imgs = result
+                    let time, y = 0
+                    this.index = 0
+                    this.renderImg(this.ctx, this.index)
+                    // this.ctx.globalCompositeOperation = 'destination-out'
+                    // this.renderImg(this.ctx, ++i)
+                    this.index++
+                    this.renderImg(this.belowCtx, this.index)
+
+                    this.toBottom() // 从上往下
+                }).catch(err => {
+                    throw Error('load image failed：' + err)
+                })
+            }
+            loadImg(link) {
+                let img = new Image()
+                img.crossOrigin = ''
+                return new Promise((resolve, reject) => {
+                    img.onload = () => {
+                        resolve(img)
+                    }
+                    img.onerror = err => {
+                        reject(err)
+                    }
+                    img.src = link
+                })
+            }
+            renderImg(ctx, i) {
+                ctx.drawImage(this.imgs[i], 0, 0, this.width, this.height)
+            }
+            pointCalculate(initVal = 0) {
+                /**
+                 * @params initVal 动画渐变方向初始值，如果从上往下过渡，则初始值为y轴0
+                 * @params maxVal 最大值
+                 * 
+                */
+                this.data = this.ctx.getImageData(0, 0, this.width, this.height)
+                this.points = this.data.data
+                for(let i = initVal; i < 50; i++) {
+                    for(let k = 0; k < this.width; k++) {
+                        let p = i * this.width + k
+                        p *= 4
+                        this.points[p + 3] = 0
+                    }         
+                    
+                }
+                this.ctx.putImageData(this.data, 0, 0)
+            }
+            toBottom() {
+                this.timeId = setInterval(() => {
+                    if (this.initYaxisVal >= this.height) {
+                        // 动画执行完毕
+                        window.clearInterval(this.timeId)
+                        setTimeout(() => {
+                            this.initYaxisVal = this.height
+                            this.below.style.zIndex = 1
+                            this.index++
+                            if (this.index >= this.imgs.length) {
+                                return
+                            }
+                            this.renderImg(this.ctx, this.index)
+                            this.toTop()
+                        }, this.time)  
+                        return
+                    }
+                    this.initYaxisVal += this.speed
+                    this.topOrBottom(this.ctx, this.initYaxisVal, 1)
+                }, 1000/ 60)
+            }
+            toTop() {
+                this.timeId = setInterval(() => {
+                    if (this.initYaxisVal <= 0) {
+                        window.clearInterval(this.timeId)
+                        setTimeout(() => {
+                            this.initYaxisVal = 0
+                            this.below.style.zIndex = -1
+                            this.index++
+                            if (this.index >= this.imgs.length) {
+                                return
+                            }
+                            this.renderImg(this.belowCtx, this.index)
+                            this.toBottom()
+                        }, this.time)
+                        return
+                    }
+                    this.initYaxisVal -= this.speed
+                    this.topOrBottom(this.belowCtx, this.initYaxisVal, -1)
+                }, 1000/ 60)
+            }
+            topOrBottom(ctx, y, flag) {
+                /**
+                 * 从上至下或者从下至上
+                 * @params ctx 表示当前正在绘制过渡效果的canvas画笔
+                 * @params y 表示绘制函数曲线的起点
+                 * @params flag Number(1/-1) 表示动画的移动方向，1 表示从上到下，-1 表示从下到上
+                */
+                let data = ctx.getImageData(0, 0, this.width, this.height) 
+                let points = data.data
+                let step = 1 / this.rx
+                let max = this.width / this.rx
+                for(let i = 0; i < max; i += step) {
+                    let y1 = Math.round(Math.sin(i) * this.ry)
+                    y1 = Math.abs(y1)
+                    for(let yv = 0; yv <= y1; yv++) {
+                        let xv = Math.round( i * this.rx + this.width * y)
+                        xv += this.width * yv * flag
+                        let index = xv * 4 
+                        points[index + 3] = 0
+                    }
+                }
+                ctx.putImageData(data, 0, 0)
+            }
+            leftOrRight(ctx, x, flag) {
+                /**
+                * @params ctx Object 要绘制动画的画笔
+                * @params x Number 相当于绘制波形曲线的x轴
+                * @params flag Number(1/-1) 表示动画的移动方向，1 表示从左到右，-1 表示从右到左
+                **/
+                let data = ctx.getImageData(0, 0, this.width, this.height) 
+                let points = data.data
+                // let flag = -1
+                let step = 1 / this.rx
+                let max = this.height / this.rx
+                for(let i = 0; i < max; i += step) {
+                    let y1 = Math.round(Math.sin(i) * this.ry)
+                    y1 = Math.abs(y1)
+                    for(let xv = 0; xv <= y1; xv++) {
+                        let yv = Math.round(this.width * i * this.rx + x)
+                        yv += xv * flag
+                        let index = yv * 4 
+                        points[index + 3] = 0
+                    }
+                }
+                ctx.putImageData(data, 0, 0)
+            }
+        }
+    </script>
+    <script>
+        let a = new WaveAnimation({
+            width: 600,
+            height: 800,
+            time: 2000,
+            imgs: [
+                // 'https://img.huashi6.com/images/resource/2017/08/01/6h4172017p0_wk1600x1600.png',
+                // 'https://img.huashi6.com/images/resource/2018/08/24/703523h74p1_wk1600x1600.jpg',
+                // 'https://img.huashi6.com/images/resource/2015/07/04/51h224450p0_wk1600x1600.jpg',
+                // 'https://img.huashi6.com/images/resource/2016/10/18/h59520888p0_wk1600x1600.jpg',
+                // 'https://img.huashi6.com/images/resource/2019/08/05/760817h98p0_wk1600x1600.png',
+                // 'http://img.huashi6.com/images/resource/2018/12/09/72035h277p0_wk1600x1600.jpg',
+                // 'http://img.huashi6.com/images/resource/2019/02/07/730423h82p0_wk1600x1600.jpg',
+                // 'https://i0.hdslb.com/bfs/album/70c745d40842e79b72e1f5124d2dd16689af6f9b.jpg',
+                // 'https://i0.hdslb.com/bfs/album/af2fa08a3bb7dcf4de4bdc70925dd0e41893f1c0.jpg',
+                // 'https://i0.hdslb.com/bfs/album/afab70ac1b75adc729e0c0544556104b09e6663c.jpg',
+                // 'https://i0.hdslb.com/bfs/album/825886891b08eb6689874a4dd05798b013196985.png@2000w_1e.webp',
+                'https://i0.hdslb.com/bfs/album/29a6652669c0b885651ab83f2fab662fc45ced0d.jpg',
+                'https://i0.hdslb.com/bfs/album/0cd6a6ead62f806562983f01e236922085d1492b.jpg',
+                'https://i0.hdslb.com/bfs/album/0b0a961aade81317fdd5504104d64cf3669e758e.jpg',
+                'http://img.huashi6.com/images/resource/2019/06/28/754393h50p0_wk448x320.png',
+                'http://img.huashi6.com/images/resource/2019/06/03/7503588h7p0_wk448x320.jpg',
+                'http://img.huashi6.com/images/resource/2019/06/09/7512801h5p0_wk448x320.png'
+
+            ]
+        })
+        console.log(a)
+    </script>
+</body>
+</html>

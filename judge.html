@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>判断点在不规则图形内部</title>
+</head>
+<body>
+    <canvas id="canvas" width="600" height="400"></canvas>
+    <script>
+        class Yrender{
+            constructor(options) {
+                this.el = options.el
+                this.width = this.el.width
+                this.height = this.el.height
+                this.ctx = this.el.getContext('2d')
+                this.shapes = []
+                this.initCanvas()
+                this.addEvent()
+            }
+            initCanvas() {
+                let ratio = window.devicePixelRatio || 1
+                this.el.style.width = this.el.width + 'px'
+                this.el.style.height = this.el.height + 'px'
+                this.el.width = this.width * ratio
+                this.el.height = this.height * ratio
+                this.ctx.scale(ratio, ratio)
+                this.ratio = ratio
+            }
+            addEvent() {
+                this.el.addEventListener('mousemove', e => {
+                    let x = e.layerX
+                    let y = e.layerY
+                    let isin = false
+                    this.clear()
+                    for(let i = 0; i < this.shapes.length; i++) {
+                        this.ctx.save()  
+                        this.paintArea(this.shapes[i].points)
+                        if (this.ctx.isPointInPath(x * this.ratio, y * this.ratio)) {
+                            this.ctx.lineWidth = 2
+                            isin = true
+                        }
+                        this.paintArea(this.shapes[i].points)
+                        this.ctx.restore()
+                    }
+                    if (isin) {
+                        this.el.style.cursor = 'pointer'
+                    }else {
+                        this.el.style.cursor = 'default'
+                    }
+                })
+            }
+            drawLine(points) {
+                this.paintArea(points)
+                this.shapes.push({
+                    type: 'area',
+                    points
+                })
+            }
+            paintArea(points) {
+                let p = points[0]
+                this.ctx.beginPath()
+                this.ctx.moveTo(p.x, p.y)
+                for(let i = 1; i < points.length; i++) {
+                    this.ctx.lineTo(points[i].x, points[i].y)
+                }
+                this.ctx.stroke()
+            }
+            clear() {
+                this.ctx.clearRect(0, 0, this.width, this.height)
+            }
+        }
+        let y = new Yrender({
+            el: document.getElementById('canvas')
+        })
+        y.drawLine([
+            {x: 10, y: 10},
+            {x: 70, y: 10},
+            {x: 50, y: 70},
+            {x: 10, y: 10}
+        ])
+        y.drawLine([
+            {x: 100, y: 10},
+            {x: 170, y: 10},
+            {x: 140, y: 90},
+            {x: 100, y: 10}
+        ])
+    </script>
+</body>
+</html>

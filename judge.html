@@ -39,8 +39,8 @@
                         if (this.ctx.isPointInPath(x * this.ratio, y * this.ratio)) {
                             this.ctx.lineWidth = 2
                             isin = true
+                            this.paintArea(this.shapes[i].points)
                         }
-                        this.paintArea(this.shapes[i].points)
                         this.ctx.restore()
                     }
                     if (isin) {
